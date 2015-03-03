@@ -44,23 +44,23 @@ Set the credentials in the same configuration file: /conf/MY_TWITTER_ACCOUNT/con
 
 ## Setup the account
 
-Run twitter4j-setup.groovy<br/>
+Run <pre>twitter4j-setup.groovy</pre>
 
 ## Scripts
 Run one script : 
 
-Example: twitter4j-favorite-tweet-management.groovy<br/>
+Example: <pre>twitter4j-favorite-tweet-management.groovy</pre>
 Add favorite<br/>
-groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.favorite twitter4j-favorite-tweet-management.groovy<br/>
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
 Clean Favorite<br/>
-groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.favorite twitter4j-favorite-tweet-management.groovy<br/>
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
 Add Followers<br/>
-groovy -classpath classpath -DrootScriptDir="/home/twitter/script/workspace/test/" -Dcontext=denizzzz twitter4j-followers-management.groovy
+<pre>groovy -classpath classpath -DrootScriptDir="/home/twitter/script/workspace/test/" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
 
 If proxy add:<br/>
--Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST 
+<pre>-Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST</pre>
 
 # Manage follow/unfollow
 
