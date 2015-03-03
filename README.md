@@ -98,12 +98,12 @@ Example, the summary script about your account:
 
 <i>if there is no -Dmode=??, the script will clean and add.</i>
 
-### Followback tweet
+### Followback
 
 - Post a tweet with some key words about followback
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-followback-tweet-management.groovy</pre>
 
-- follow some Tweeter accounts about followback
+- Follow some Tweeter accounts about followback
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-followback-users.groovy</pre>
 
 
@@ -114,6 +114,46 @@ TODO
 ### Add category, subscribe users
 
 TODO
+
+### Crontab
+
+Schedule the Groovy scripts with sh scripts and the crontab.
+
+<pre>crontab -e</pre>
+
+<i>common crontab entries</i>
+
+<pre>
+30 20 * * * /home/twitter/script/bin/run-clean-logs.sh
+
+20 9 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-summary.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-summary.log
+
+0 12 15,29 * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-clean-ignore-list.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-clean-ignore-list.log
+</pre>
+
+<i>follow/unfollow crontab entries</i>
+
+<pre>
+0 20 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-followers-add.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-followers-add/log
+
+0 9 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-followers-clean.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-followers-clean.log
+</pre>
+
+<i>favorite/unfavorite crontab entries</i>
+
+<pre>
+0 */1 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-favorite-add.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-favorite-add.log
+
+0 */1 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-favorite-clean.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-favorite-clean.log
+</pre>
+
+<i>followback crontab entries</i>
+
+<pre>
+0 0,1,2,3,4,5,6,7 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-tweet-followback.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-tweet-followback.log
+
+0 8 * * * /home/twitter/script/bin/MY_TWITTER_ACCOUNT/run-tweet-followback-clean.sh >> /home/twitter/script/workspace/groovy-twitter/logs/MY_TWITTER_ACCOUNT/run-tweet-followback-clean.log
+</pre>
 
 ## TODO
 
