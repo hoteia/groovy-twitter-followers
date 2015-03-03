@@ -22,9 +22,13 @@ Website: http://twitter4j.org/
 Target of the Groovy Script:
 - Manage follow/unfollow
 - Manage favorite/unfavorite
+- Manage categories
+- Clean DM
 - Tweet
 
 # Quick Start
+
+## API tokens
 Create your own API tokens with read/write access<br/>
 https://apps.twitter.com/ "Keys and Access Tokens"<br/>
 Consumer Key (API Key)<br/>
@@ -38,6 +42,11 @@ Save the values in your app folder: /conf/MY_TWITTER_ACCOUNT/config.properties
 Create credentials for an email service like MailJet: https://www.mailjet.com<br/>
 Set the credentials in the same configuration file: /conf/MY_TWITTER_ACCOUNT/config.properties
 
+## Setup the account
+
+Run twitter4j-setup.groovy<br/>
+
+## Scripts
 Run one script : 
 
 Example: twitter4j-favorite-tweet-management.groovy<br/>
