@@ -42,6 +42,15 @@ Save the values in your app folder: /conf/MY_TWITTER_ACCOUNT/config.properties
 Create credentials for an email service like MailJet: https://www.mailjet.com<br/>
 Set the credentials in the same configuration file: /conf/MY_TWITTER_ACCOUNT/config.properties
 
+## Script SH
+
+Some scripts sh are in the folder "misc\bin"
+
+## Grabe conf file
+
+An example of Grape config file is here
+https://github.com/hoteia/groovy-twitter-followers/blob/master/misc/grapeConfig.xml
+
 ## Setup the account
 
 Set in datas/YOUR_ACCOUNT/draft_prospects.properties the Twitter accounts you want use to define follow/unfollow list<br/>
@@ -84,13 +93,24 @@ Example, the summary script about your account:
 - Clean unfollow
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.followers twitter4j-followers-management.groovy</pre>
 
-<i>if there is no -Dmode=add.followers, the script will clean and add.</i>
+<i>if there is no -Dmode=??, the script will clean and add.</i>
 
 ### Followback tweet
 
+- Post a tweet with some key words about followback
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-followback-tweet-management.groovy</pre>
+
+- follow some Tweeter accounts about followback
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-followback-users.groovy</pre>
+
+
 ### Clean DM message
 
+TODO
+
 ### Add category, subscribe users
+
+TODO
 
 ## TODO
 
