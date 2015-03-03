@@ -44,7 +44,15 @@ Set the credentials in the same configuration file: /conf/MY_TWITTER_ACCOUNT/con
 
 ## Setup the account
 
-Run <pre>twitter4j-setup.groovy</pre>
+Set in datas/YOUR_ACCOUNT/draft_prospects.properties the Twitter accounts you want use to define follow/unfollow list<br/>
+
+The script "setup" will create 
+- the "follow protected list" (peoples you want to keep in your friends list)
+<pre>datas/YOUR_ACCOUNT/protected_friends.properties</pre>
+- the prospect source list : peoples who follow some accounts (from draft_prospects.properties)
+<pre>datas/YOUR_ACCOUNT/friends_prospects.properties</pre>
+
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-setup.groovy</pre>
 
 ## Scripts
 Run one script : 
