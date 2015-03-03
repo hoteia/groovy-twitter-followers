@@ -70,6 +70,10 @@ if(userNameDoesntExist){
 }
 println "User, ID : $userId , name : $userName"
 
+appDatasFile.withWriter { outWriter ->
+    XmlUtil.serialize( new StreamingMarkupBuilder().bind{ mkp.yield appDatasXml }, outWriter )
+}
+
 def userFolder = new File(rootScriptDir + 'logs/' + userName + '/')
 if(!userFolder.exists()){
 	userFolder.mkdirs()  
@@ -96,6 +100,4 @@ if(sourceProspectList.isNotUpToDate()){
 }
 
 	
-appDatasFile.withWriter { outWriter ->
-    XmlUtil.serialize( new StreamingMarkupBuilder().bind{ mkp.yield appDatasXml }, outWriter )
-}
+

@@ -68,11 +68,17 @@ Example, the summary script about your account:
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
 ### Add Followers<br/>
-<pre>groovy -classpath classpath -DrootScriptDir="/home/twitter/script/workspace/test/" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
 
 If proxy add:<br/>
 <pre>-Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST</pre>
 
 
+## TODO
 
+- write : clean DM message (useless messages with "thanks for the follow" or "TrueTwit validation", etc)
+- write : manage categories (create category from properties configuration, and follow/unfollow account who tweet some associated key words/hashtags)
+
+- clean common code from twitter4j-*.groovy script
+- improve code about twitter rate from classpath scripts
 
