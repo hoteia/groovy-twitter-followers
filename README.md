@@ -61,13 +61,21 @@ Example, the summary script about your account:
 
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-summary-profile-management.groovy</pre>
 
-### Add favorite<br/>
+### Favorite<br/>
+
+<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 favorite/day, 475 unfavorite/day and keep 50 for you </i></strong>
+
+- Add favorite
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
-### Clean Favorite<br/>
+- Clean favorite
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
-### Add Followers<br/>
+### Followers
+
+<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 follow/day, 475 unfollow/day and keep 50 for you </i></strong>
+
+- follow/unfollow
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
 
 If proxy add:<br/>
