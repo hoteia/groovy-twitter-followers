@@ -19,7 +19,7 @@ GitHub: https://github.com/yusuke/twitter4j/
 Website: http://twitter4j.org/
 
 
-Target of the Groovy Script:
+Target of the Groovy scripts:
 - Manage follow/unfollow
 - Manage favorite/unfavorite
 - Manage categories
