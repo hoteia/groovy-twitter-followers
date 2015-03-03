@@ -57,25 +57,22 @@ The script "setup" will create
 ## Scripts
 Run one script : 
 
-Example: <pre>twitter4j-favorite-tweet-management.groovy</pre>
-Add favorite<br/>
+Example, the summary script about your account: 
+
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-summary-profile-management.groovy</pre>
+
+### Add favorite<br/>
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
-Clean Favorite<br/>
+### Clean Favorite<br/>
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.favorite twitter4j-favorite-tweet-management.groovy</pre>
 
-Add Followers<br/>
+### Add Followers<br/>
 <pre>groovy -classpath classpath -DrootScriptDir="/home/twitter/script/workspace/test/" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
 
 If proxy add:<br/>
 <pre>-Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST</pre>
 
-# Manage follow/unfollow
 
-
-# Manage favorite/unfavorite
-
-
-# Tweet
 
 
