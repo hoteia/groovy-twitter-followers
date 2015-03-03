@@ -54,6 +54,9 @@ The script "setup" will create
 
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-setup.groovy</pre>
 
+If you are behind a proxy, add:<br/>
+<pre>-Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST</pre>
+
 ## Scripts
 Run one script : 
 
@@ -61,9 +64,9 @@ Example, the summary script about your account:
 
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT twitter4j-summary-profile-management.groovy</pre>
 
-### Favorite<br/>
+### Favorites<br/>
 
-<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 favorite/day, 475 unfavorite/day and keep 50 for you </i></strong>
+<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 favorite/day, 475 unfavorite/day and keep 50/day for you </i></strong>
 
 - Add favorite
 <pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.favorite twitter4j-favorite-tweet-management.groovy</pre>
@@ -73,14 +76,21 @@ Example, the summary script about your account:
 
 ### Followers
 
-<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 follow/day, 475 unfollow/day and keep 50 for you </i></strong>
+<strong><i>Take care about Twitter API rate limit, 1000 calls/day. Setup your script with 475, 475 follow/day, 475 unfollow/day and keep 50/day for you </i></strong>
 
-- follow/unfollow
-<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=denizzzz twitter4j-followers-management.groovy</pre>
+- Add follow
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=add.followers twitter4j-followers-management.groovy</pre>
 
-If proxy add:<br/>
-<pre>-Dhttp.proxyHost=PROXY_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_PORTS_IF_EXIST -Dhttp.proxyHost=PROXY_SECURE_HOST_IF_EXIST -Dhttp.proxyPort=PROXY_SECURE_PORTS_IF_EXIST</pre>
+- Clean unfollow
+<pre>groovy -classpath classpath -DrootScriptDir="YOUR_PROJECT_PATH" -Dcontext=MY_TWITTER_ACCOUNT -Dmode=clean.followers twitter4j-followers-management.groovy</pre>
 
+<i>if there is no -Dmode=add.followers, the script will clean and add.</i>
+
+### Followback tweet
+
+### Clean DM message
+
+### Add category, subscribe users
 
 ## TODO
 
