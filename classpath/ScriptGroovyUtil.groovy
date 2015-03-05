@@ -19,4 +19,13 @@ class ScriptGroovyUtil {
 		}
     }
 
+	static boolean isNotFollowingMe(long[] myFollowers, long targetFollowerId){
+		for (int i = 0; i < myFollowers.length; i++) {
+			long followerId = myFollowers[i];
+			if(followerId == targetFollowerId){
+				return false;
+			}
+		}
+		return true
+	}
 }

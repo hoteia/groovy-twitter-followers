@@ -87,7 +87,7 @@ if(modeExist){
 			def text = status.getText().toLowerCase();
 			if(status.getUser().getId() == twitterId){
 				println "My tweet: " + text
-				if(text.contains("follow")){
+				if(text.contains("follow") && !text.contains("keep")){
 					println "is follow tweet, destroy it"
 					twitter.destroyStatus(status.getId())
 				}
@@ -108,7 +108,7 @@ if(modeExist){
 		def text = status.getText().toLowerCase();
 		if(status.getUser().getId() == twitterId){
 			println "My tweet: " + text
-			if(text.contains("follow")){
+			if(text.contains("follow") && !text.contains("keep")){
 				println "is follow tweet, destroy it"
 				twitter.destroyStatus(status.getId())
 			}

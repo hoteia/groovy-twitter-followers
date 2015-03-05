@@ -117,8 +117,10 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 									Status status = user.getStatus();
 									int userFollowersCount = user.getFollowersCount()
 									def followRequestSent = user.isFollowRequestSent()
-									println "User : $followerId/" + user.getScreenName() + "/" + user.getName() + "/friends: " + userFollowersCount + " / follow requestsent: " + followRequestSent + " / test isNotFollowingMe: "+ isNotFollowingMe(followerId) + " / status not null: " + (status != null)
-									if(!user.isFollowRequestSent() && isNotFollowingMe(followerId)  && userFollowersCount < 2000 && status != null){
+									boolean isNotFollowingMe = ScriptGroovyUtil.isNotFollowingMe(this.myFollowers, followerId)
+									
+									println "User : $followerId/" + user.getScreenName() + "/" + user.getName() + "/friends: " + userFollowersCount + " / follow requestsent: " + followRequestSent + " / test isNotFollowingMe: "+ isNotFollowingMe + " / status not null: " + (status != null)
+									if(!user.isFollowRequestSent() && isNotFollowingMe && userFollowersCount < 2000 && status != null){
 										Relationship relationship = twitter.showFriendship(twitter.getId(), user.getId())
 										println "isSourceFollowedByTarget: " + relationship.isSourceFollowedByTarget()
 										if(!relationship.isSourceFollowedByTarget()){
@@ -188,12 +190,14 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 		targetedfollowersMap.each { key, value ->
 			def twitterUserInfo = value.getScreenName() + ";" + value.getName();
 			try{
+				addedFollowersMap.put(key, twitterUserInfo)
 				long prospectTwitterId = new Long(key).longValue();
 				twitter.createFriendship(prospectTwitterId)
 				println "Add follower $key/$twitterUserInfo"
-				addedFollowersMap.put(key, twitterUserInfo)
 				
 			} catch(TwitterException ex) { 
+				addedFollowersMap.put(key, twitterUserInfo)
+
 				Writer wr = new StringWriter();
 				PrintWriter pWriter = new PrintWriter(wr);
 				ex.printStackTrace(pWriter);
@@ -343,21 +347,6 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 		}
 		return ignoreFollowersMap;
 	}
-	
-	def isNotFollowingMe(long targetFollowerId){
-		for (int i = 0; i < this.myFollowers.length; i++) {
-			long followerId = this.myFollowers[i];
-			if(followerId == targetFollowerId){
-				return false;
-			}
-		}
-		return true
-	}
-	
-	
-	
-	
-	
 	
 	
 	

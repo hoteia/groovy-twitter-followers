@@ -10,6 +10,7 @@ import groovy.xml.XmlUtil
 
 def today = new Date()
 def context = System.getProperty("context")
+def mode = System.getProperty("mode")
 def rootScriptDir = System.getProperty("rootScriptDir")
 def config = new ConfigSlurper().parse(new File(rootScriptDir + 'conf/' + context + '/config.properties').toURL());
 
@@ -28,8 +29,8 @@ println "rootScriptDir: " + rootScriptDir
 println "context: " + context
 println "-------------------"		
 
-SendEmail.sendNotificationMail("Start");
-  	
+SendEmail.sendNotificationMail("Start " + mode + " Poke Tweets");
+  
 TwitterFactory twitterFactory = new TwitterFactory(twitterConf.build());
 Twitter twitter;
 try {
@@ -70,32 +71,29 @@ if(userNameDoesntExist){
 }
 println "User, ID : $userId , name : $userName"
 
-def userFolder = new File(rootScriptDir + 'logs/' + userName + '/')
-if(!userFolder.exists()){
-	userFolder.mkdirs()  
-}
 
-println "-------------------"
-println "STEP 1 - CHECK AND EVALUATE PROTECTED FRIENDS LIST"
-println "-------------------"
+if("add.poke" == mode){
+	println "Mode Add poke Tweets"
 
-ProtectedFriendList protectedFriendList = new ProtectedFriendList(twitter, appDatasXml)
-if(protectedFriendList.isNotInitialized()){
-	println "- START PROTECTED FRIENDS LIST INITIALIZE"
-	protectedFriendList.initialize()
-}
+	println "-------------------"
+	println "STEP 1 - Add poke tweets"
+	println "-------------------"
+
+	PokeManager favoriteManager = new PokeManager(twitter, appDatasXml)
+	favoriteManager.startAddPokeTweets(config.maxNewPokes)
+
+} else if ("clean.poke" == mode){
+	println "Mode Clean poke Tweets"
 	
-println "-------------------"
-println "STEP 2 - CHECK AND EVALUATE PROSPECT ACCOUNT SOURCE LIST"
-println "-------------------"
+	println "-------------------"
+	println "STEP 1 - Clean poke tweet"
+	println "-------------------"
+	
+	PokeManager favoriteManager = new PokeManager(twitter, appDatasXml)
+	favoriteManager.cleanPokeTweets()
 
-SourceProspectList sourceProspectList = new SourceProspectList(twitter, appDatasXml)
-if(sourceProspectList.isNotUpToDate()){
-	println "- START PROSPECT ACCOUNT SOURCE LIST INITIALIZE"
-	sourceProspectList.initialize()
 }
 
-	
 appDatasFile.withWriter { outWriter ->
     XmlUtil.serialize( new StreamingMarkupBuilder().bind{ mkp.yield appDatasXml }, outWriter )
 }
