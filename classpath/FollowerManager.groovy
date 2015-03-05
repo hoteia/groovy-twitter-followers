@@ -35,7 +35,7 @@ class FollowerManager {
 		final Map historicMap = getHistoricIds();
 		final Map targetedfollowersMap = new HashMap();
 		final Map ignorefollowersMap = getIgnoreFollowers();
-		def secureMaxWhileCountIt = 10
+		def secureMaxWhileCountIt = 5
 		def splitByProspectResult = (maxNewFollowers / sourceProspectsMap.size())
 		def splitByProspect = splitByProspectResult.setScale(0, BigDecimal.ROUND_UP)
 		println "maxNewFollowers: " + maxNewFollowers + ", sourceProspectsMap size:" + sourceProspectsMap.size() + ", splitByProspect:" + splitByProspectResult + "/" + splitByProspect
@@ -187,11 +187,12 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 	
 	def addFollowers(Map targetedfollowersMap){
 		final Map addedFollowersMap = new HashMap()
+		final Map blockUsersMap = new HashMap()
 		targetedfollowersMap.each { key, value ->
 			def twitterUserInfo = value.getScreenName() + ";" + value.getName();
 			try{
-				addedFollowersMap.put(key, twitterUserInfo)
 				long prospectTwitterId = new Long(key).longValue();
+				addedFollowersMap.put(key, twitterUserInfo)
 				twitter.createFriendship(prospectTwitterId)
 				println "Add follower $key/$twitterUserInfo"
 				
@@ -204,6 +205,12 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 				def errorMessage = "Error to add follower $key/$twitterUserInfo" + wr.toString()
 				SendEmail.sendErrorMail(errorMessage);
 				println "TwitterException : " + ex.getMessage()
+				
+				def errorCode = ex.getCode()
+				if('162' == errorCode){
+					blockUsersMap.put(key, twitterUserInfo)
+				}
+				
 				//ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
 				return
 
@@ -223,6 +230,9 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 				ex.getMessage()
 			}
 		}
+		println "blocked from: " + blockUsersMap.size() + " user(s)"
+		// TODO : histo the map in a file
+		
 		
 		// SAVE HISTORY
 		// rewrite all the map : delete/write
