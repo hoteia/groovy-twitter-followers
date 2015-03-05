@@ -35,13 +35,13 @@ class FollowerManager {
 		final Map historicMap = getHistoricIds();
 		final Map targetedfollowersMap = new HashMap();
 		final Map ignorefollowersMap = getIgnoreFollowers();
-		def secureMaxWhileCountIt = 5
+		def secureMaxWhileCountIt = 10
 		def splitByProspectResult = (maxNewFollowers / sourceProspectsMap.size())
 		def splitByProspect = splitByProspectResult.setScale(0, BigDecimal.ROUND_UP)
 		println "maxNewFollowers: " + maxNewFollowers + ", sourceProspectsMap size:" + sourceProspectsMap.size() + ", splitByProspect:" + splitByProspectResult + "/" + splitByProspect
 		if(sourceProspectsMap.size() > 0){
 			println "INIT FOLLOWERS LIST TO CHECK IN HISTORY FILE"
-			def countWhileIt = 0;
+			def countWhileIt = 1;
 			while(countWhileIt < secureMaxWhileCountIt){
 				println "countWhileIt: $countWhileIt | secureMaxWhileCountIt: $secureMaxWhileCountIt"
 				sourceProspectsMap.each { key, value ->
@@ -84,7 +84,7 @@ if(rateLimitStatusUsers.getRemaining() < 3){
 	rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
 }
 
-						IDs followerIds = twitter.getFollowersIDs(prospectTwitterId, -1)
+						IDs followerIds = twitter.getFollowersIDs(prospectTwitterId, countWhileIt)
 						println followerIds.getIDs().length + " followers for $key/$value"
 
 						long[] longIds = followerIds.getIDs();
