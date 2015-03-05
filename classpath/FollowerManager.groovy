@@ -43,8 +43,10 @@ class FollowerManager {
 			println "INIT FOLLOWERS LIST TO CHECK IN HISTORY FILE"
 			def countWhileIt = 1;
 			while(countWhileIt < secureMaxWhileCountIt){
+				println "----------------------------------------------------------------"
 				println "countWhileIt: $countWhileIt | secureMaxWhileCountIt: $secureMaxWhileCountIt"
 				sourceProspectsMap.each { key, value ->
+					println "------------------------------------------------"
 					if(targetedfollowersMap.size() >= maxNewFollowers){
 						return
 					}
@@ -91,6 +93,7 @@ if(rateLimitStatusUsers.getRemaining() < 3){
 						def countCallTwitterShowUser = 0;
 						def countUserToAddByProspect = 0;
 						for (int i = 0; i < longIds.length; i++) {
+							println "--------------------------------"
 							if(targetedfollowersMap.size() >= maxNewFollowers){
 								break;
 							}

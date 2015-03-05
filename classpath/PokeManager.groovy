@@ -59,11 +59,13 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 			
 			def countWhile = 0
 			while(countWhile < maxNewPokes){
+				println "----------------------------------------------------------------"
 				countWhile++
 				if(pokeTweetsMap.size() == maxNewPokes){
 					continue;
 				}
 				queryWordsMap.each { queryWord, enabled ->
+					println "------------------------------------------------"
 					println "Start search poke with '" + queryWord + "', enabled: " + enabled 	
 					if(enabled){
 						Query query = new Query(queryWord);
@@ -80,6 +82,7 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 						def validTimeStamp = today.time.time - (45 * 60 * 1000)
 						boolean nothingToAdd = true
 						for (Status tweet : tweets) {
+							println "--------------------------------"
 							if(countNewPokeTweetByWord >= splitByWord){
 								break
 							}
