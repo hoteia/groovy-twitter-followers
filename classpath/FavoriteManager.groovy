@@ -11,45 +11,26 @@ import java.math.*
 class FavoriteManager {
 
 	Twitter twitter
-	def rootScriptDir = System.getProperty("rootScriptDir")
+	def appDatasXml
+		
 	def userName
 	def today = Calendar.instance
 
     FavoriteManager(Twitter twitter, def appDatasXml) {
 		this.twitter = twitter;	
+		this.appDatasXml = appDatasXml;	
+				
 		this.userName = appDatasXml.conf.user.@screenName.text()
-		def userFolder = new File(rootScriptDir + 'datas/' + userName + '/')
-		if(!userFolder.exists()){
-			userFolder.mkdirs()  
-		}
     }
 
 	def startAddFavoriteTweets(maxNewFavorites){
-		final Map queryWordsMap = getQueryWords()
+		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
+		
 		final Map favoriteTweetsMap = new HashMap()
 		def countNewFavoriteTweetGlobal = 0
         try {
 		
-Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status")
-System.out.println("RateLimit Limit: " + rateLimitStatusApplicationRateLimit.getLimit());
-System.out.println("RateLimit Remaining: " + rateLimitStatusApplicationRateLimit.getRemaining());
-System.out.println("RateLimit SecondsUntilReset: " + rateLimitStatusApplicationRateLimit.getSecondsUntilReset());
-if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
-}
-
-RateLimitStatus rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets")
-System.out.println("SearchTweet Limit: " + rateLimitSearchTweet.getLimit());
-System.out.println("SearchTweet Remaining: " + rateLimitSearchTweet.getRemaining());
-System.out.println("SearchTweet SecondsUntilReset: " + rateLimitSearchTweet.getSecondsUntilReset());
-if(rateLimitSearchTweet.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitSearchTweet.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets");
-}
+			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
 				
 			def splitByWord = getFavoriteTweetByQueryWord(queryWordsMap, maxNewFavorites)
 			
@@ -134,7 +115,6 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 				}
 			}
 		}
-	
 		SendEmail.sendSuccessMail("add favorite", countNewFavoriteTweetGlobal);
 	}
 
@@ -144,35 +124,19 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 			if(enabled)
 				countQueryWordEnabled++
 		}
-		def splitByWordResult = (maxNewFavorites / countQueryWordEnabled)
-		def splitByWord = splitByWordResult.setScale(0, BigDecimal.ROUND_UP)
-		return splitByWord;
+		if(countQueryWordEnabled != 0){
+			def splitByWordResult = (maxNewFavorites / countQueryWordEnabled)
+			def splitByWord = splitByWordResult.setScale(0, BigDecimal.ROUND_UP)
+			return splitByWord;
+		}
+		return 2;
 	}
 	
 	def cleanFavoriteTweets(){
 	
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-		RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status")
-		System.out.println("RateLimit Limit: " + rateLimitStatusApplicationRateLimit.getLimit());
-		System.out.println("RateLimit Remaining: " + rateLimitStatusApplicationRateLimit.getRemaining());
-		System.out.println("RateLimit SecondsUntilReset: " + rateLimitStatusApplicationRateLimit.getSecondsUntilReset());
-		if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
-			ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
-			rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
-		}
-
-		RateLimitStatus rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets")
-		System.out.println("SearchTweet Limit: " + rateLimitSearchTweet.getLimit());
-		System.out.println("SearchTweet Remaining: " + rateLimitSearchTweet.getRemaining());
-		System.out.println("SearchTweet SecondsUntilReset: " + rateLimitSearchTweet.getSecondsUntilReset());
-		if(rateLimitSearchTweet.getRemaining() < 3){
-			ScriptGroovyUtil.pause(rateLimitSearchTweet.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
-			rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets");
-		}
+		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
 		
-		final Map queryWordsMap = getQueryWords()
+		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
 		int page = 10
 		int totalTweets = page * 20
 		Paging paging = new Paging(1, totalTweets)
@@ -216,78 +180,6 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 			}
 		}
 		return false;
-	}
-	
-	def getHistoryFavoriteTweets(){
-		final Map historyFavoriteTweetsMap = new HashMap()
-		try {
-			def historyFavoriteTweetsFile =  new File(rootScriptDir + 'datas/' + userName + '/history_favorite_tweets.properties');
-			if (!historyFavoriteTweetsFile.exists()) {
-				historyFavoriteTweetsFile.createNewFile()  
-				return historyFavoriteTweetsMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(historyFavoriteTweetsFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null)
-					if(inputLine.contains("=")){
-						String[] split = inputLine.split("=");
-						def twitterUserId = split[0];
-						def twitterUserScreenName = split[1];
-						historyFavoriteTweetsMap.put(twitterUserId, twitterUserScreenName);
-					}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return historyFavoriteTweetsMap;
-	}
-	
-	def getQueryWords(){
-		final Map queryWordsMap = new HashMap()
-		try {
-			def queryWordsFile =  new File(rootScriptDir + 'datas/' + userName + '/favorite_tweets_query_words.properties');
-			if (!queryWordsFile.exists()) {
-				queryWordsFile.createNewFile()  
-				return queryWordsMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(queryWordsFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null){
-					def lineIsNotEmpty = inputLine?.trim()
-					println "inputLine: '" + inputLine + "', empty: " + !lineIsNotEmpty
-					if(lineIsNotEmpty){
-						queryWordsMap.put(inputLine, true);
-					}
-				}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return queryWordsMap;
 	}
 	
 }

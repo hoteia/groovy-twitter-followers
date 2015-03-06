@@ -11,18 +11,17 @@ import java.math.*
 class PokeManager {
 
 	Twitter twitter
+	def appDatasXml
+	
 	long[] myFollowers
-	def rootScriptDir = System.getProperty("rootScriptDir")
 	def userName
 	def today = Calendar.instance
 
     PokeManager(Twitter twitter, def appDatasXml) {
 		this.twitter = twitter;	
+		this.appDatasXml = appDatasXml;	
+		
 		this.userName = appDatasXml.conf.user.@screenName.text()
-		def userFolder = new File(rootScriptDir + 'datas/' + userName + '/')
-		if(!userFolder.exists()){
-			userFolder.mkdirs()  
-		}
     }
 
 	def startAddPokeTweets(maxNewPokes){

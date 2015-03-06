@@ -40,6 +40,11 @@ try {
 	twitter = twitterFactory.getInstance();
 }
 
+def userFolder = new File(rootScriptDir + 'datas/' + userName + '/')
+if(!userFolder.exists()){
+	userFolder.mkdirs()  
+}
+
 def appDatasFile = new File(rootScriptDir + 'datas/' + context + '/app.datas' )
 def appDatasXml = new XmlSlurper().parse(appDatasFile)
 def userNode = appDatasXml.conf.user[0]
@@ -74,7 +79,7 @@ def userFolder = new File(rootScriptDir + 'logs/' + userName + '/')
 if(!userFolder.exists()){
 	userFolder.mkdirs()  
 }
-
+		
 println "-------------------"
 println "STEP 1 - CHECK AND EVALUATE PROTECTED FRIENDS LIST"
 println "-------------------"

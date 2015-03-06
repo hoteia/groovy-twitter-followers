@@ -12,19 +12,19 @@ class FollowerManager {
 
 	Twitter twitter
 	long[] myFollowers
-	def rootScriptDir = System.getProperty("rootScriptDir")
+	def appDatasXml
+	
 	def userName
 	def userId
+	
 	def today = Calendar.instance
 							
     FollowerManager(Twitter twitter, def appDatasXml) {
 		this.twitter = twitter;	
+		this.appDatasXml = appDatasXml;	
+		
 		this.userName = appDatasXml.conf.user.@screenName.text()
 		this.userId = appDatasXml.conf.user.@id.text()
-		def userFolder = new File(rootScriptDir + 'datas/' + userName + '/')
-		if(!userFolder.exists()){
-			userFolder.mkdirs()  
-		}
     }
 
 	def initFollowersListToCheck(Map sourceProspectsMap, int maxNewFollowers){
@@ -32,118 +32,108 @@ class FollowerManager {
 		IDs ids = twitter.getFollowersIDs(-1);
 		this.myFollowers = ids.getIDs();
 	
-		final Map historicMap = getHistoricIds();
+		final Map historicMap = MapUtil.getHistoricIds(appDatasXml);
+		final Map ignorefollowersMap = MapUtil.getIgnoreFollowers(appDatasXml);
+		final Map blockedByUsersMap = MapUtil.getBlockedByUsers(appDatasXml)
 		final Map targetedfollowersMap = new HashMap();
-		final Map ignorefollowersMap = getIgnoreFollowers();
-		def secureMaxWhileCountIt = 10
+		//def secureMaxWhileCountIt = 5
 		def splitByProspectResult = (maxNewFollowers / sourceProspectsMap.size())
 		def splitByProspect = splitByProspectResult.setScale(0, BigDecimal.ROUND_UP)
 		println "maxNewFollowers: " + maxNewFollowers + ", sourceProspectsMap size:" + sourceProspectsMap.size() + ", splitByProspect:" + splitByProspectResult + "/" + splitByProspect
 		if(sourceProspectsMap.size() > 0){
 			println "INIT FOLLOWERS LIST TO CHECK IN HISTORY FILE"
-			def countWhileIt = 1;
-			while(countWhileIt < secureMaxWhileCountIt){
-				println "----------------------------------------------------------------"
-				println "countWhileIt: $countWhileIt | secureMaxWhileCountIt: $secureMaxWhileCountIt"
-				sourceProspectsMap.each { key, value ->
-					println "------------------------------------------------"
-					if(targetedfollowersMap.size() >= maxNewFollowers){
-						return
-					}
-					try{
-						long prospectTwitterId = new Long(key).longValue();
-						
-// CHECK RATIO
-Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status")
-System.out.println("RateLimit Limit: " + rateLimitStatusApplicationRateLimit.getLimit());
-System.out.println("RateLimit Remaining: " + rateLimitStatusApplicationRateLimit.getRemaining());
-System.out.println("RateLimit SecondsUntilReset: " + rateLimitStatusApplicationRateLimit.getSecondsUntilReset());
-if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
-}
+			
+			println "----------------------------------------------------------------"
+			
+			sourceProspectsMap.each { key, value ->
+				println "------------------------------------------------"
+				if(targetedfollowersMap.size() >= maxNewFollowers){
+					return
+				}
+				try{
+					long prospectTwitterId = new Long(key).longValue();						
 
-RateLimitStatus rateLimitStatusFollowers = rateLimitStatusMap.get("/followers/ids")
-System.out.println("Followers Limit: " + rateLimitStatusFollowers.getLimit());
-System.out.println("Followers Remaining: " + rateLimitStatusFollowers.getRemaining());
-System.out.println("Followers SecondsUntilReset: " + rateLimitStatusFollowers.getSecondsUntilReset());
-if(rateLimitStatusFollowers.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusFollowers.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusFollowers = rateLimitStatusMap.get("/followers/ids");
-}
+					RateLimitStatus rateLimitStatusFollowers = RateUtil.checkRateLimitStatusFollowers(twitter)
+					RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(twitter)
 
-RateLimitStatus rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
-System.out.println("UsersShow Limit: " + rateLimitStatusUsers.getLimit());
-System.out.println("UsersShow Remaining: " + rateLimitStatusUsers.getRemaining());
-//System.out.println("UsersShow ResetTimeInSeconds: " + rateLimitStatusUsers.getResetTimeInSeconds());
-System.out.println("UsersShow SecondsUntilReset: " + rateLimitStatusUsers.getSecondsUntilReset());
-if(rateLimitStatusUsers.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusUsers.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
-}
-
-						IDs followerIds = twitter.getFollowersIDs(prospectTwitterId, countWhileIt)
-						println followerIds.getIDs().length + " followers for $key/$value"
-
+					boolean continueItIdsPagination = true;
+					long cursor = -1;
+					
+					def countCallTwitterShowUser = 0;
+					def countUserToAddByProspect = 0;
+					
+					while(continueItIdsPagination){
+						IDs followerIds = twitter.getFollowersIDs(prospectTwitterId, cursor);
+						println "******************************************************"
+						println "### Target: $key/$value"
+						println "### Page/cursor: $cursor"
+						println "### Followers: " + followerIds.getIDs().length
+						println "******************************************************"
 						long[] longIds = followerIds.getIDs();
-						def countCallTwitterShowUser = 0;
-						def countUserToAddByProspect = 0;
+
 						for (int i = 0; i < longIds.length; i++) {
-							println "--------------------------------"
 							if(targetedfollowersMap.size() >= maxNewFollowers){
-								break;
+								println "targetedfollowersMap.size() >= maxNewFollowers"
+								continueItIdsPagination = false;
+								break;								
 							}
 							if(countUserToAddByProspect >= splitByProspect){
+								println "countUserToAddByProspect >= splitByProspect"
+								continueItIdsPagination = false;
 								break;
 							}
 							
 							long followerId = longIds[i];
 							String followerIdString = "" + followerId;
+							println "### User: $followerId/"
 							if(!historicMap.containsKey(followerIdString) && !ignorefollowersMap.containsKey(followerIdString) && !followerIdString.equals(userId)){
 								try {
 								
 // CHECK RATIO
-println "CHECK RATIO : Remaining = " + rateLimitStatusUsers.getRemaining() + " : ShowUser = " + countCallTwitterShowUser + " : targetedfollowersMap = " + targetedfollowersMap.size()
-if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
-	ScriptGroovyUtil.pause(rateLimitStatusUsers.getSecondsUntilReset())
+println "-------------------------------------------------------"
+println "CHECK RATIO : Remaining = " + rateLimitUserShow.getRemaining() + " : ShowUser = " + countCallTwitterShowUser + " : targetedfollowersMap = " + targetedfollowersMap.size()
+if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
+	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
 	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
+	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
 	countCallTwitterShowUser = 0
 }
+println "-------------------------------------------------------"
 
 									User user = twitter.showUser(followerId);
+									println "### User info: " + user.getScreenName() + "/" + user.getName() 
 									countCallTwitterShowUser++
 									Status status = user.getStatus();
 									int userFollowersCount = user.getFollowersCount()
 									def followRequestSent = user.isFollowRequestSent()
 									boolean isNotFollowingMe = ScriptGroovyUtil.isNotFollowingMe(this.myFollowers, followerId)
 									
-									println "User : $followerId/" + user.getScreenName() + "/" + user.getName() + "/friends: " + userFollowersCount + " / follow requestsent: " + followRequestSent + " / test isNotFollowingMe: "+ isNotFollowingMe + " / status not null: " + (status != null)
+									println "### Followers: " + userFollowersCount + " / follow request sent: " + followRequestSent + " / test isNotFollowingMe: "+ isNotFollowingMe + " / status not null: " + (status != null)
+									println "### Test isNotFollowingMe: " + isNotFollowingMe + " / Status is not null: " + (status != null)
 									if(!user.isFollowRequestSent() && isNotFollowingMe && userFollowersCount < 2000 && status != null){
 										Relationship relationship = twitter.showFriendship(twitter.getId(), user.getId())
-										println "isSourceFollowedByTarget: " + relationship.isSourceFollowedByTarget()
+										println "### isSourceFollowedByTarget: " + relationship.isSourceFollowedByTarget()
 										if(!relationship.isSourceFollowedByTarget()){
 											def validDays = 2
 											Date lastStatusDate = user.getStatus().getCreatedAt();
 											def validDateTime = today.time - validDays
 											def ignoreDateTime = today.time - 30
-											println "Last statut is recent < $validDays days: " + (lastStatusDate.time >= validDateTime.time) + " -> " +lastStatusDate
-											println "Last statut is not recent >30, ignore: " + (lastStatusDate.time <= validDateTime.time) + " -> " +lastStatusDate
+											println "Last statut is recent < $validDays days: " + (lastStatusDate.time >= validDateTime) + " -> " +lastStatusDate
+											println "Last statut is recent < $validDays days: " + (lastStatusDate.time >= validDateTime) + " -> " +lastStatusDate
+											println "Last statut is not recent >30, ignore: " + (lastStatusDate.time <= validDateTime) + " -> " +lastStatusDate
 											
-											if(lastStatusDate.time >= validDateTime.time){
+											if(lastStatusDate.time >= validDateTime){
 												targetedfollowersMap.put(user.getId(), user)
-												println "Keep this User, total: " + targetedfollowersMap.size()
+												println "- Keep - Total users to add: " + targetedfollowersMap.size()
 												countUserToAddByProspect++
-											} else if (lastStatusDate.time <= ignoreDateTime.time){
+											} else if (lastStatusDate.time <= ignoreDateTime){
 												def twitterUserInfo = user.getScreenName() + ";" + user.getName();
 												ignorefollowersMap.put(user.getId(), twitterUserInfo)
-												println "Ignore this User, total: " + ignorefollowersMap.size()
+												println "- Ignore - ignore followers Map size:  " + ignorefollowersMap.size()
 											}
 										}
+									} else {
+										println "- Skip -"
 									}
 									
 								} catch(TwitterException ex) { 
@@ -152,25 +142,44 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 										ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
 									}
 								}
+							} else {
+								println "- No showUser -"
+								if(historicMap.containsKey(followerIdString)){
+									println "historicMap containsKey $followerIdString: " + historicMap.containsKey(followerIdString)
+								}
+								if(ignorefollowersMap.containsKey(followerIdString)){
+									println "ignorefollowersMap containsKey $followerIdString: " + ignorefollowersMap.containsKey(followerIdString)
+								}
+								if(followerIdString.equals(userId)){
+									println "followerIdString.equals(userId): " + userId
+								}
 							}
+							println "******************************************************"
 						}
 						
-					} catch(TwitterException ex) { 
-						println "TwitterException : " + ex.getMessage()
-						ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
-					} catch(IOException ex) { 
-						System.err.println("An IOException was caught!")
-						ex.printStackTrace(); 
+						
+						cursor = followerIds.getNextCursor();
+						if(!followerIds.hasNext()){
+							continueItIdsPagination = false;
+						}
 					}
+
+
+					
+				} catch(TwitterException ex) { 
+					println "TwitterException : " + ex.getMessage()
+					ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
+				} catch(IOException ex) { 
+					System.err.println("An IOException was caught!")
+					ex.printStackTrace(); 
 				}
-				countWhileIt++
-			}
-		
+			}	
 			println "targetedfollowersMap : " + targetedfollowersMap.size()
 
 		} else {
 			println "SOURCE PROSPECT LIST IS NOT INITIALIZED"
 		}
+		
 		
 		// SAVE IGNORE FOLLOWER
 		// rewrite all the map : delete/write
@@ -209,7 +218,7 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 				SendEmail.sendErrorMail(errorMessage);
 				println "TwitterException : " + ex.getMessage()
 				
-				def errorCode = ex.getCode()
+				def errorCode = ex.getErrorCode()
 				if('162' == errorCode){
 					blockUsersMap.put(key, twitterUserInfo)
 				}
@@ -289,85 +298,11 @@ if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
 		SendEmail.sendSuccessMail("delete followers", deletedFollowersMap.size());
 	}
 	
-	def getHistoricIds(){
-		final Map historicMap = new HashMap()
-		try {
-			def protectedFollowingFile =  new File(rootScriptDir + 'datas/' + userName + '/history_add_followers.properties');
-			if (!protectedFollowingFile.exists()) {
-				protectedFollowingFile.createNewFile()  
-				return historicMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(protectedFollowingFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null)
-					if(inputLine.contains("=")){
-						String[] split = inputLine.split("=");
-						def twitterUserId = split[0];
-						def twitterUserScreenName = split[1].split(";");
-						historicMap.put(twitterUserId, twitterUserScreenName);
-					}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return historicMap;
-	}
-	
-	def getIgnoreFollowers(){
-		final Map ignoreFollowersMap = new HashMap()
-		try {
-			def ignoreFollowersFile =  new File(rootScriptDir + 'datas/' + userName + '/ignore_followers.properties');
-			if (!ignoreFollowersFile.exists()) {
-				ignoreFollowersFile.createNewFile()  
-				return ignoreFollowersMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(ignoreFollowersFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null)
-					if(inputLine.contains("=")){
-						String[] split = inputLine.split("=");
-						def twitterUserId = split[0];
-						def twitterUserScreenName = split[1].split(";");
-						ignoreFollowersMap.put(twitterUserId, split[1]);
-					}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return ignoreFollowersMap;
-	}
-	
-	
-	
 	def searchFollowersToAdd(String word, int maxNewFollowers){
 
 		IDs ids = twitter.getFollowersIDs(-1);
 		this.myFollowers = ids.getIDs();
-		final Map historicMap = getHistoricIds();
+		final Map historicMap = MapUtil.getHistoricIds(appDatasXml);
 		final Map targetedfollowersMap = new HashMap();
 		int page = 1;
 		def ignoreDateTime = today.time - 30
@@ -411,15 +346,15 @@ if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
 	rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
 }
 
-RateLimitStatus rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
-System.out.println("UsersShow Limit: " + rateLimitStatusUsers.getLimit());
-System.out.println("UsersShow Remaining: " + rateLimitStatusUsers.getRemaining());
-//System.out.println("UsersShow ResetTimeInSeconds: " + rateLimitStatusUsers.getResetTimeInSeconds());
-System.out.println("UsersShow SecondsUntilReset: " + rateLimitStatusUsers.getSecondsUntilReset());
-if(rateLimitStatusUsers.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusUsers.getSecondsUntilReset())
+RateLimitStatus rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
+System.out.println("UsersShow Limit: " + rateLimitUserShow.getLimit());
+System.out.println("UsersShow Remaining: " + rateLimitUserShow.getRemaining());
+//System.out.println("UsersShow ResetTimeInSeconds: " + rateLimitUserShow.getResetTimeInSeconds());
+System.out.println("UsersShow SecondsUntilReset: " + rateLimitUserShow.getSecondsUntilReset());
+if(rateLimitUserShow.getRemaining() < 3){
+	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
 	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
+	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
 }
 
 
@@ -436,11 +371,11 @@ if(rateLimitStatusUsers.getRemaining() < 3){
 
 				try {
 // CHECK RATIO
-println "CHECK RATIO : Remaining = " + rateLimitStatusUsers.getRemaining()  + ", countCallTwitterShowUser:" + countCallTwitterShowUser + ", deletedFollowersMap: " + deletedFollowersMap.size()
-if(countCallTwitterShowUser >= (rateLimitStatusUsers.getRemaining() - 1)){
-	ScriptGroovyUtil.pause(rateLimitStatusUsers.getSecondsUntilReset())
+println "CHECK RATIO : Remaining = " + rateLimitUserShow.getRemaining()  + ", countCallTwitterShowUser:" + countCallTwitterShowUser + ", deletedFollowersMap: " + deletedFollowersMap.size()
+if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
+	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
 	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusUsers = rateLimitStatusMap.get("/users/show/:id")
+	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
 	countCallTwitterShowUser = 0
 }
 
