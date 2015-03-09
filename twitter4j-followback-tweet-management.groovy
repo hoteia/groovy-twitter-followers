@@ -7,6 +7,7 @@ import twitter4j.conf.*
 
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
+import groovy.time.*
 
 def today = new Date()
 def context = System.getProperty("context")
@@ -120,7 +121,9 @@ if(modeExist){
 	println "-------------------"
 
 	//def followBackStatus = "@" + userName + " " + config.followback.tweet.text + " " + today
-	def followBackStatus = "@followback " + config.followback.tweet.text + " " + today
+	def followBackStatus = "@followback " + config.followback.tweet.text + " " + today.format("yyyy-MM-dd HH:mm:ss")
+
+	println "New tweet [" + followBackStatus + "]."
 	Status status = twitter.updateStatus(followBackStatus)
 	println "Successfully updated the status to [" + followBackStatus + "]."
 
@@ -130,3 +133,9 @@ if(modeExist){
 appDatasFile.withWriter { outWriter ->
     XmlUtil.serialize( new StreamingMarkupBuilder().bind{ mkp.yield appDatasXml }, outWriter )
 }
+
+def end = new Date()
+TimeDuration duration = TimeCategory.minus(end, today)
+println "Processing end: " + end
+println "Processing duration: " + duration
+

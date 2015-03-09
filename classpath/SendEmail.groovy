@@ -5,8 +5,7 @@ import javax.mail.internet.*
 public static void sendErrorMail(String body) throws Exception {
 	try {
 		def context = System.getProperty("context")
-		def rootScriptDir = System.getProperty("rootScriptDir")
-		def config = new ConfigSlurper().parse(new File(rootScriptDir + 'conf/' + context + '/config.properties').toURL());
+		def config = new ConfigSlurper().parse(new File(ScriptGroovyUtil.getRootScriptDir() + 'conf/' + context + '/config.properties').toURL());
 
 		if("on" == config.email.error){
 			Properties props = System.getProperties();
@@ -44,8 +43,7 @@ public static void sendErrorMail(String body) throws Exception {
 public static void sendSuccessMail(String type, int size) throws Exception {
 	try {
 		def context = System.getProperty("context")
-		def rootScriptDir = System.getProperty("rootScriptDir")
-		def config = new ConfigSlurper().parse(new File(rootScriptDir + 'conf/' + context + '/config.properties').toURL());
+		def config = new ConfigSlurper().parse(new File(ScriptGroovyUtil.getRootScriptDir() + 'conf/' + context + '/config.properties').toURL());
 
 		if("on" == config.email.success){
 			Properties props = System.getProperties();
@@ -82,8 +80,7 @@ public static void sendSuccessMail(String type, int size) throws Exception {
 public static void sendNotificationMail(String notification) throws Exception {
         try {
 			def context = System.getProperty("context")
-			def rootScriptDir = System.getProperty("rootScriptDir")
-			def config = new ConfigSlurper().parse(new File(rootScriptDir + 'conf/' + context + '/config.properties').toURL());
+			def config = new ConfigSlurper().parse(new File(ScriptGroovyUtil.getRootScriptDir() + 'conf/' + context + '/config.properties').toURL());
 
 			if("on" == config.email.notification){
 				Properties props = System.getProperties();
@@ -120,8 +117,7 @@ public static void sendNotificationMail(String notification) throws Exception {
 public static void sendSummaryMail(String summary, String followersCount) throws Exception {
         try {
 			def context = System.getProperty("context")
-			def rootScriptDir = System.getProperty("rootScriptDir")
-			def config = new ConfigSlurper().parse(new File(rootScriptDir + 'conf/' + context + '/config.properties').toURL());
+			def config = new ConfigSlurper().parse(new File(ScriptGroovyUtil.getRootScriptDir() + 'conf/' + context + '/config.properties').toURL());
 
 			Properties props = System.getProperties();
 			props.put("mail.smtp.starttls.enable", config.conf.smtp.mail.smtp.starttls.enable);

@@ -306,4 +306,40 @@ class MapUtil {
 		return draftProspectsMap;
 	}
 	
+	def getHistoryPokeTweets(){
+		final Map historyPokeTweetsMap = new HashMap()
+		try {
+			def historyPokeTweetsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_poke_tweets.properties');
+			if (!historyPokeTweetsFile.exists()) {
+				historyPokeTweetsFile.createNewFile()  
+				return historyPokeTweetsMap;
+			}
+			BufferedReader rd = null; 
+			try { 
+				rd = new BufferedReader(new FileReader(historyPokeTweetsFile)); 
+				String inputLine = null; 
+				while((inputLine = rd.readLine()) != null)
+					if(inputLine.contains("=")){
+						String[] split = inputLine.split("=");
+						def twitterUserId = split[0];
+						def twitterUserScreenName = split[1];
+						historyPokeTweetsMap.put(twitterUserId, twitterUserScreenName);
+					}
+			} catch(IOException ex) { 
+				System.err.println("An IOException was caught!"); 
+				ex.printStackTrace(); 
+			} finally { 
+				try { 
+					rd.close(); 
+				} catch (IOException ex) { 
+					System.err.println("An IOException was caught!"); 
+					ex.printStackTrace(); 
+				} 
+			} 
+		} catch (e) {
+			throw e
+		}
+		return historyPokeTweetsMap;
+	}
+	
 }

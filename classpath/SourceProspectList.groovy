@@ -21,7 +21,7 @@ class SourceProspectList {
     }
 
 	def isNotUpToDate(){
-		final Map sourceProspectsMap = getSourceProspects();
+		final Map sourceProspectsMap = MapUtil.getSourceProspects(appDatasXml);
 		if(sourceProspectsMap.size() > 0){
 			final Map draftProspectsMap = MapUtil.getDraftProspects(appDatasXml);
 			if(draftProspectsMap.size() > 0){
@@ -39,6 +39,7 @@ class SourceProspectList {
 		final Map newSourceProspectsMap = new HashMap()
 		final Map draftProspectsMap = MapUtil.getDraftProspects(appDatasXml)
 		if(draftProspectsMap.size() > 0){
+		
 			RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(twitter)
 			
 			def countCallTwitterShowUser = 0
@@ -48,7 +49,7 @@ class SourceProspectList {
 println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
 if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
+	Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
 	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
 	countCallTwitterShowUser = 0
 }
@@ -68,7 +69,7 @@ if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 			
 			// SAVE/ADD NEW PROSPECT
 			// rewrite all the map : delete/write
-			File file = new File(rootScriptDir + 'datas/' + userName + '/friends_prospects.properties');
+			File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/friends_prospects.properties');
 			println "prospect to write in the prospect source list: " + newSourceProspectsMap.entrySet().size()
 			newSourceProspectsMap.each { key, value ->
 				try{
@@ -80,7 +81,7 @@ if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 			}
 
 			// clean draft			
-			def draftProspectsFile =  new File(rootScriptDir + 'datas/' + userName + '/draft_prospects.properties');
+			def draftProspectsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/draft_prospects.properties');
 			draftProspectsFile.delete()
 			draftProspectsFile.createNewFile()  
 			

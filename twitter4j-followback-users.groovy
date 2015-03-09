@@ -7,6 +7,7 @@ import twitter4j.conf.*
 
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
+import groovy.time.*
 
 def today = new Date()
 def context = System.getProperty("context")
@@ -91,3 +92,9 @@ if("add.followers" == mode){
 appDatasFile.withWriter { outWriter ->
     XmlUtil.serialize( new StreamingMarkupBuilder().bind{ mkp.yield appDatasXml }, outWriter )
 }
+
+def end = new Date()
+TimeDuration duration = TimeCategory.minus(end, today)
+println "Processing end: " + end
+println "Processing duration: " + duration
+

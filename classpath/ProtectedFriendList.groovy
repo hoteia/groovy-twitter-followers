@@ -51,7 +51,7 @@ class ProtectedFriendList {
 		println "is empty -> start init protected following"
 		long cursor = -1;
 		
-		RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitFriends(twitter)
+		RateLimitStatus rateLimitFriends = RateUtil.checkRateLimitFriends(twitter)
 		RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(twitter)
 
 		IDs ids = twitter.getFriendsIDs(-1);
@@ -68,7 +68,7 @@ class ProtectedFriendList {
 println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
 if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
+	Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
 	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
 	countCallTwitterShowUser = 0
 }
@@ -89,7 +89,7 @@ if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 		}
 
 		// rewrite all the map : delete/write
-		FileWriter fstream = new FileWriter(rootScriptDir + 'datas/' + userName + '/protected_friends.properties');
+		FileWriter fstream = new FileWriter(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/protected_friends.properties');
 		BufferedWriter bufferedWriter = new BufferedWriter(fstream); 
 		println "friends to write in the protected list: " + protectedFriendsMap.entrySet().size()
 		protectedFriendsMap.each { key, value ->

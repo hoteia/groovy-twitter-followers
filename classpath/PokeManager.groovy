@@ -28,31 +28,13 @@ class PokeManager {
 		IDs ids = twitter.getFollowersIDs(-1);
 		this.myFollowers = ids.getIDs();
 		
-		final Map queryWordsMap = getQueryWords()
+		final Map historicMap = MapUtil.getHistoryPokeTweets(appDatasXml);
+		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
 		final Map pokeTweetsMap = new HashMap()
 		def countNewPokeTweetGlobal = 0
         try {
 		
-Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status")
-System.out.println("RateLimit Limit: " + rateLimitStatusApplicationRateLimit.getLimit());
-System.out.println("RateLimit Remaining: " + rateLimitStatusApplicationRateLimit.getRemaining());
-System.out.println("RateLimit SecondsUntilReset: " + rateLimitStatusApplicationRateLimit.getSecondsUntilReset());
-if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
-}
-
-RateLimitStatus rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets")
-System.out.println("SearchTweet Limit: " + rateLimitSearchTweet.getLimit());
-System.out.println("SearchTweet Remaining: " + rateLimitSearchTweet.getRemaining());
-System.out.println("SearchTweet SecondsUntilReset: " + rateLimitSearchTweet.getSecondsUntilReset());
-if(rateLimitSearchTweet.getRemaining() < 3){
-	ScriptGroovyUtil.pause(rateLimitSearchTweet.getSecondsUntilReset())
-	rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets");
-}
+			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
 				
 			def splitByWord = getPokeTweetByQueryWord(queryWordsMap, maxNewPokes)
 			
@@ -91,7 +73,7 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 							String tweetUserScreenName = "" + tweet.getUser().getScreenName()
 							Date createdAt = tweet.getCreatedAt()
 							println "Check Tweet, user id: " + tweetUserScreenName + ", date: " + createdAt.time + ", must be > " + validTimeStamp							
-							if(!pokeTweetsMap.containsKey(tweetUserScreenName) && createdAt.time > validTimeStamp){
+							if(!historicMap.containsKey(followerIdString) && !pokeTweetsMap.containsKey(tweetUserScreenName) && createdAt.time > validTimeStamp){
 								def tweetUserId = tweet.getUser().getId()
 								boolean isNotFollowingMe = ScriptGroovyUtil.isNotFollowingMe(this.myFollowers, tweetUserId)
 								Relationship relationship = twitter.showFriendship(twitter.getId(), tweetUserId)
@@ -146,10 +128,23 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 					ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
 				}
 			}
-		}
+		}		
 	
 		println "Poke tweets added: " + countPokeTweet + " on " + pokeTweetsMap.size()
 	
+		// SAVE HISTORY
+		// rewrite all the map : delete/write
+		println "saved user in the history list: " + pokeTweetsMap.size()
+		File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_poke_tweets.properties');
+		pokeTweetsMap.each { key, value ->
+			try{
+				 file << (key + "=" + value + "\n")
+			} catch(IOException ex) { 
+				System.err.println("An IOException was caught!"); 
+				ex.printStackTrace(); 
+			}
+		}
+		
 		SendEmail.sendSuccessMail("add poke", countNewPokeTweetGlobal);
 	}
 
@@ -166,26 +161,7 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 	
 	def cleanPokeTweets(){
 	
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-		RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status")
-		System.out.println("RateLimit Limit: " + rateLimitStatusApplicationRateLimit.getLimit());
-		System.out.println("RateLimit Remaining: " + rateLimitStatusApplicationRateLimit.getRemaining());
-		System.out.println("RateLimit SecondsUntilReset: " + rateLimitStatusApplicationRateLimit.getSecondsUntilReset());
-		if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
-			ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
-			rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get("/application/rate_limit_status");
-		}
-
-		RateLimitStatus rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets")
-		System.out.println("SearchTweet Limit: " + rateLimitSearchTweet.getLimit());
-		System.out.println("SearchTweet Remaining: " + rateLimitSearchTweet.getRemaining());
-		System.out.println("SearchTweet SecondsUntilReset: " + rateLimitSearchTweet.getSecondsUntilReset());
-		if(rateLimitSearchTweet.getRemaining() < 3){
-			ScriptGroovyUtil.pause(rateLimitSearchTweet.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
-			rateLimitSearchTweet = rateLimitStatusMap.get("/search/tweets");
-		}
+		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
 		
 		Paging paging = new Paging(1, 100)
 		List<Status> statuses = twitter.getUserTimeline(paging);
@@ -215,78 +191,6 @@ if(rateLimitSearchTweet.getRemaining() < 3){
 			}
 		}
 		return false;
-	}
-	
-	def getHistoryPokeTweets(){
-		final Map historyPokeTweetsMap = new HashMap()
-		try {
-			def historyPokeTweetsFile =  new File(rootScriptDir + 'datas/' + userName + '/history_poke_tweets.properties');
-			if (!historyPokeTweetsFile.exists()) {
-				historyPokeTweetsFile.createNewFile()  
-				return historyPokeTweetsMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(historyPokeTweetsFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null)
-					if(inputLine.contains("=")){
-						String[] split = inputLine.split("=");
-						def twitterUserId = split[0];
-						def twitterUserScreenName = split[1];
-						historyPokeTweetsMap.put(twitterUserId, twitterUserScreenName);
-					}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return historyPokeTweetsMap;
-	}
-	
-	def getQueryWords(){
-		final Map queryWordsMap = new HashMap()
-		try {
-			def queryWordsFile =  new File(rootScriptDir + 'datas/' + userName + '/favorite_tweets_query_words.properties');
-			if (!queryWordsFile.exists()) {
-				queryWordsFile.createNewFile()  
-				return queryWordsMap;
-			}
-			BufferedReader rd = null; 
-			try { 
-				rd = new BufferedReader(new FileReader(queryWordsFile)); 
-				String inputLine = null; 
-				while((inputLine = rd.readLine()) != null){
-					def lineIsNotEmpty = inputLine?.trim()
-					println "inputLine: '" + inputLine + "', empty: " + !lineIsNotEmpty
-					if(lineIsNotEmpty){
-						queryWordsMap.put(inputLine, true);
-					}
-				}
-			} catch(IOException ex) { 
-				System.err.println("An IOException was caught!"); 
-				ex.printStackTrace(); 
-			} finally { 
-				try { 
-					rd.close(); 
-				} catch (IOException ex) { 
-					System.err.println("An IOException was caught!"); 
-					ex.printStackTrace(); 
-				} 
-			} 
-		} catch (e) {
-			throw e
-		}
-		return queryWordsMap;
 	}
 	
 }
