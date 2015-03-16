@@ -83,27 +83,27 @@ if(modeExist){
 		println "STEP 1 - CHECK AND EVALUATE PROTECTED FRIENDS LIST"
 		println "-------------------"
 
-		ProtectedFriendList protectedFriendList = new ProtectedFriendList(twitter, appDatasXml)
-		if(protectedFriendList.isNotInitialized()){
+		ProtectedFriendManager protectedFriendManager = new ProtectedFriendManager(twitter, appDatasXml)
+		if(protectedFriendManager.isNotInitialized()){
 			println "- START PROTECTED FRIENDS LIST INITIALIZE"
-			protectedFriendList.initialize()
+			protectedFriendManager.initialize()
 		}
 		
 		println "-------------------"
 		println "STEP 2 - CHECK AND EVALUATE PROSPECT ACCOUNT SOURCE LIST"
 		println "-------------------"
 
-		SourceProspectList sourceProspectList = new SourceProspectList(twitter, appDatasXml)
-		if(sourceProspectList.isNotUpToDate()){
+		SourceProspectManager sourceProspectManager = new SourceProspectManager(twitter, appDatasXml)
+		if(sourceProspectManager.isNotUpToDate()){
 			println "- START PROSPECT ACCOUNT SOURCE LIST INITIALIZE"
-			sourceProspectList.initialize()
+			sourceProspectManager.initialize()
 		}
 		
 		println "-------------------"
 		println "STEP 3 - BUILD A FOLLOWERS LIST FROM PROSPECT SOURCE LIST"
 		println "-------------------"
 
-		Map sourceProspectsMap = MapUtil.getSourceProspects(appDatasXml);
+		Map sourceProspectsMap = DataManager.getSourceProspects(appDatasXml);
 		FollowerManager followerManager = new FollowerManager(twitter, appDatasXml);
 		Map targetedfollowersMap = followerManager.initFollowersListToCheck(sourceProspectsMap, config.maxNewFollowers);
 		followerManager.addFollowers(targetedfollowersMap);
@@ -118,8 +118,8 @@ if(modeExist){
 		println "STEP 1 - CLEAN FOLLOWERS WHICH ARE NOT PROTECTED"
 		println "-------------------"
 		
-		ProtectedFriendList protectedFriendList = new ProtectedFriendList(twitter, appDatasXml)
-		Map protectedFriendsMap = MapUtil.getProtectedFriendsMap(appDatasXml)
+		ProtectedFriendManager protectedFriendManager = new ProtectedFriendManager(twitter, appDatasXml)
+		Map protectedFriendsMap = DataManager.getProtectedFriendsMap(appDatasXml)
 		FollowerManager followerManager = new FollowerManager(twitter, appDatasXml);
 		followerManager.deleteFollowers(protectedFriendsMap)
 
@@ -135,13 +135,13 @@ if(modeExist){
 	println "-------------------"
 
 	// NO CHECK -> CREATE A NEW SCRIPT TO INIT
-	ProtectedFriendList protectedFriendList = new ProtectedFriendList(twitter, appDatasXml)
+	ProtectedFriendManager protectedFriendManager = new ProtectedFriendManager(twitter, appDatasXml)
 	
 	println "-------------------"
 	println "STEP 1 - CLEAN FOLLOWERS WHICH ARE NOT PROTECTED"
 	println "-------------------"
 	
-	Map protectedFriendsMap = MapUtil.getProtectedFriendsMap(appDatasXml)
+	Map protectedFriendsMap = DataManager.getProtectedFriendsMap(appDatasXml)
 	FollowerManager followerManager = new FollowerManager(twitter, appDatasXml);
 	followerManager.deleteFollowers(protectedFriendsMap)
 	
@@ -149,17 +149,17 @@ if(modeExist){
 	println "STEP 2 - CHECK AND EVALUATE PROSPECT ACCOUNT SOURCE LIST"
 	println "-------------------"
 
-	SourceProspectList sourceProspectList = new SourceProspectList(twitter, appDatasXml)
-	if(sourceProspectList.isNotUpToDate()){
+	SourceProspectManager sourceProspectManager = new SourceProspectManager(twitter, appDatasXml)
+	if(sourceProspectManager.isNotUpToDate()){
 		println "- START PROSPECT ACCOUNT SOURCE LIST INITIALIZE"
-		sourceProspectList.initialize()
+		sourceProspectManager.initialize()
 	}
 	
 	println "-------------------"
 	println "STEP 3 - BUILD A FOLLOWERS LIST FROM PROSPECT SOURCE LIST"
 	println "-------------------"
 
-	Map sourceProspectsMap = MapUtil.getSourceProspects(appDatasXml);
+	Map sourceProspectsMap = DataManager.getSourceProspects(appDatasXml);
 	Map targetedfollowersMap = followerManager.initFollowersListToCheck(sourceProspectsMap, config.maxNewFollowers);
 	followerManager.addFollowers(targetedfollowersMap);
 

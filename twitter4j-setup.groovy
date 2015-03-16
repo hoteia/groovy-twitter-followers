@@ -41,11 +41,6 @@ try {
 	twitter = twitterFactory.getInstance();
 }
 
-def userFolder = new File(rootScriptDir + 'datas/' + userName + '/')
-if(!userFolder.exists()){
-	userFolder.mkdirs()  
-}
-
 def appDatasFile = new File(rootScriptDir + 'datas/' + context + '/app.datas' )
 def appDatasXml = new XmlSlurper().parse(appDatasFile)
 def userNode = appDatasXml.conf.user[0]
@@ -85,20 +80,20 @@ println "-------------------"
 println "STEP 1 - CHECK AND EVALUATE PROTECTED FRIENDS LIST"
 println "-------------------"
 
-ProtectedFriendList protectedFriendList = new ProtectedFriendList(twitter, appDatasXml)
-if(protectedFriendList.isNotInitialized()){
+ProtectedFriendManager protectedFriendManager = new ProtectedFriendManager(twitter, appDatasXml)
+if(protectedFriendManager.isNotInitialized()){
 	println "- START PROTECTED FRIENDS LIST INITIALIZE"
-	protectedFriendList.initialize()
+	protectedFriendManager.initialize()
 }
 	
 println "-------------------"
 println "STEP 2 - CHECK AND EVALUATE PROSPECT ACCOUNT SOURCE LIST"
 println "-------------------"
 
-SourceProspectList sourceProspectList = new SourceProspectList(twitter, appDatasXml)
-if(sourceProspectList.isNotUpToDate()){
+SourceProspectManager sourceProspectManager = new SourceProspectManager(twitter, appDatasXml)
+if(sourceProspectManager.isNotUpToDate()){
 	println "- START PROSPECT ACCOUNT SOURCE LIST INITIALIZE"
-	sourceProspectList.initialize()
+	sourceProspectManager.initialize()
 }
 
 	

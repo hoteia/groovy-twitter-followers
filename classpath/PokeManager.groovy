@@ -4,7 +4,8 @@ import twitter4j.auth.*;
 import twitter4j.conf.*;
 
 import java.math.*
- 
+import groovy.json.*
+
 /**
  *
  */
@@ -28,13 +29,13 @@ class PokeManager {
 		IDs ids = twitter.getFollowersIDs(-1);
 		this.myFollowers = ids.getIDs();
 		
-		final Map historicMap = MapUtil.getHistoryPokeTweets(appDatasXml);
-		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
+		final Map historicMap = DataManager.getHistoryPokeTweets(appDatasXml);
+		final Map queryWordsMap = DataManager.getQueryWords(appDatasXml)
 		final Map pokeTweetsMap = new HashMap()
 		def countNewPokeTweetGlobal = 0
         try {
-		
-			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
+			Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweetrateLimitStatusMap, twitter)
 				
 			def splitByWord = getPokeTweetByQueryWord(queryWordsMap, maxNewPokes)
 			
@@ -161,7 +162,8 @@ class PokeManager {
 	
 	def cleanPokeTweets(){
 	
-		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
+		Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(rateLimitStatusMap, twitter)
 		
 		Paging paging = new Paging(1, 100)
 		List<Status> statuses = twitter.getUserTimeline(paging);

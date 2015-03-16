@@ -8,8 +8,10 @@ import twitter4j.conf.*
  */
 class RateUtil {
 
-	synchronized static RateLimitStatus checkRateLimit(Twitter twitter){
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
+	synchronized static Map<String, RateLimitStatus> checkRateLimit(Map<String, RateLimitStatus> rateLimitStatusMap, Twitter twitter){
+		if(rateLimitStatusMap == null){
+			rateLimitStatusMap = twitter.getRateLimitStatus()
+		}
 		def apiPath = "/application/rate_limit_status"
 		
 		RateLimitStatus rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get(apiPath)
@@ -19,15 +21,15 @@ class RateUtil {
 		if(rateLimitStatusApplicationRateLimit.getRemaining() < 3){
 			ScriptGroovyUtil.pause(rateLimitStatusApplicationRateLimit.getSecondsUntilReset())
 			rateLimitStatusMap = twitter.getRateLimitStatus()
-			rateLimitStatusApplicationRateLimit = rateLimitStatusMap.get(apiPath);
 		}
-		return rateLimitStatusApplicationRateLimit
+		return rateLimitStatusMap
 	}
 	
-	synchronized static RateLimitStatus checkRateLimitSearchTweet(Twitter twitter){
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-		def apiPath = "/search/tweets"
-		RateUtil.checkRateLimit(twitter)
+	synchronized static RateLimitStatus checkRateLimitSearchTweet(Map<String, RateLimitStatus> rateLimitStatusMap, Twitter twitter){
+		if(rateLimitStatusMap == null){
+			rateLimitStatusMap = RateUtil.checkRateLimit(rateLimitStatusMap, twitter)
+		}
+		def apiPath = "/search/tweets"		
 		
 		RateLimitStatus rateLimitSearchTweet = rateLimitStatusMap.get(apiPath)
 		System.out.println("UsersShow Limit: " + rateLimitSearchTweet.getLimit());
@@ -36,16 +38,17 @@ class RateUtil {
 		System.out.println("UsersShow SecondsUntilReset: " + rateLimitSearchTweet.getSecondsUntilReset());
 		if(rateLimitSearchTweet.getRemaining() < 3){
 			ScriptGroovyUtil.pause(rateLimitSearchTweet.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
+			rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
 			rateLimitSearchTweet = rateLimitStatusMap.get(apiPath)
 		}
 		return rateLimitSearchTweet
 	}
 	
-	synchronized static RateLimitStatus checkRateLimitStatusFollowers(Twitter twitter){
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
+	synchronized static RateLimitStatus checkRateLimitStatusFollowers(Map<String, RateLimitStatus> rateLimitStatusMap, Twitter twitter){
+		if(rateLimitStatusMap == null){
+			rateLimitStatusMap = RateUtil.checkRateLimit(rateLimitStatusMap, twitter)
+		}
 		def apiPath = "/followers/ids"
-		RateUtil.checkRateLimit(twitter)
 		
 		RateLimitStatus rateLimitStatusFollowers = rateLimitStatusMap.get(apiPath)
 		System.out.println("UsersShow Limit: " + rateLimitStatusFollowers.getLimit());
@@ -54,16 +57,17 @@ class RateUtil {
 		System.out.println("UsersShow SecondsUntilReset: " + rateLimitStatusFollowers.getSecondsUntilReset());
 		if(rateLimitStatusFollowers.getRemaining() < 3){
 			ScriptGroovyUtil.pause(rateLimitStatusFollowers.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
+			rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
 			rateLimitStatusFollowers = rateLimitStatusMap.get(apiPath)
 		}
 		return rateLimitStatusFollowers
 	}
 	
-	synchronized static RateLimitStatus checkRateLimitUserShow(Twitter twitter){
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
+	synchronized static RateLimitStatus checkRateLimitUserShow(Map<String, RateLimitStatus> rateLimitStatusMap, Twitter twitter){
+		if(rateLimitStatusMap == null){
+			rateLimitStatusMap = RateUtil.checkRateLimit(rateLimitStatusMap, twitter)
+		}
 		def apiPath = "/users/show/:id"
-		RateUtil.checkRateLimit(twitter)
 		
 		RateLimitStatus rateLimitUserShow = rateLimitStatusMap.get(apiPath)
 		System.out.println("UsersShow Limit: " + rateLimitUserShow.getLimit());
@@ -72,16 +76,17 @@ class RateUtil {
 		System.out.println("UsersShow SecondsUntilReset: " + rateLimitUserShow.getSecondsUntilReset());
 		if(rateLimitUserShow.getRemaining() < 3){
 			ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
+			rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
 			rateLimitUserShow = rateLimitStatusMap.get(apiPath)
 		}
 		return rateLimitUserShow
 	}
 	
-	synchronized static RateLimitStatus checkRateLimitFriends(Twitter twitter){
-		Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
+	synchronized static RateLimitStatus checkRateLimitFriends(Map<String, RateLimitStatus> rateLimitStatusMap, Twitter twitter){
+		if(rateLimitStatusMap == null){
+			rateLimitStatusMap = RateUtil.checkRateLimit(rateLimitStatusMap, twitter)
+		}
 		def apiPath = "/friends/ids"
-		RateUtil.checkRateLimit(twitter)
 		
 		RateLimitStatus rateLimitFriends = rateLimitStatusMap.get(apiPath)
 		System.out.println("UsersShow Limit: " + rateLimitFriends.getLimit());
@@ -90,7 +95,7 @@ class RateUtil {
 		System.out.println("UsersShow SecondsUntilReset: " + rateLimitFriends.getSecondsUntilReset());
 		if(rateLimitFriends.getRemaining() < 3){
 			ScriptGroovyUtil.pause(rateLimitFriends.getSecondsUntilReset())
-			rateLimitStatusMap = twitter.getRateLimitStatus()
+			rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
 			rateLimitFriends = rateLimitStatusMap.get(apiPath)
 		}
 		return rateLimitFriends

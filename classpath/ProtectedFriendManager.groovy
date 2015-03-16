@@ -1,21 +1,22 @@
 
-import java.util.Date;
-
 import twitter4j.*;
 import twitter4j.auth.*;
 import twitter4j.conf.*;
 
+import java.util.Date;
+import groovy.json.*
+
 /**
  *
  */
-class ProtectedFriendList {
+class ProtectedFriendManager {
 
 	Twitter twitter
 	def appDatasXml
 		
 	def userName
 	
-    ProtectedFriendList(Twitter twitter, def appDatasXml) {
+    ProtectedFriendManager(Twitter twitter, def appDatasXml) {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
@@ -51,8 +52,9 @@ class ProtectedFriendList {
 		println "is empty -> start init protected following"
 		long cursor = -1;
 		
-		RateLimitStatus rateLimitFriends = RateUtil.checkRateLimitFriends(twitter)
-		RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(twitter)
+		Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+		RateLimitStatus rateLimitFriends = RateUtil.checkRateLimitFriends(rateLimitStatusMap, twitter)
+		RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
 
 		IDs ids = twitter.getFriendsIDs(-1);
 		long[] longIds = ids.getIDs();
@@ -64,21 +66,21 @@ class ProtectedFriendList {
 			if(!protectedFriendsMap.containsKey(friendIdString)){
 				try {
 				
-// CHECK RATIO
-println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
-if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
-	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-	Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
-	countCallTwitterShowUser = 0
-}
+					// CHECK RATIO
+					println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
+					if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
+						ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
+						rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
+						countCallTwitterShowUser = 0
+					}
 
 
 					def user = twitter.showUser(friendId);
 					countCallTwitterShowUser++
 					println "$friendIdString : " + user.getScreenName() + " | " + user.getName()
 					def twitterUserInfo = user.getScreenName() + ";" + user.getName();
-					protectedFriendsMap.put(friendIdString, twitterUserInfo);
+					def twitterUser = new TwitterUser( id: user.getId(), name: user.getName(), screenName: user.getScreenName(), createdAt: user.getCreatedAt(), favouritesCount: user.getFavouritesCount(), friendsCount: user.getFriendsCount(), followersCount: user.getFollowersCount())
+					protectedFriendsMap.put(friendIdString, twitterUser);
 				} catch(TwitterException ex) { 
 					println "TwitterException : " + ex.getMessage()
 					ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset());
@@ -94,7 +96,7 @@ if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 		println "friends to write in the protected list: " + protectedFriendsMap.entrySet().size()
 		protectedFriendsMap.each { key, value ->
 			try{
-				bufferedWriter.append(key + "=" + value + "\n");
+				bufferedWriter.append(key + "=" + new JsonBuilder(value).toString() + "\n");
 			} catch(IOException ex) { 
 				System.err.println("An IOException was caught!"); 
 				ex.printStackTrace(); 

@@ -107,6 +107,36 @@ summary += "\n\r"
 summary += "Favorites: " + favouritesCount
 summary += "\n\r"
 
+println "-------------------"
+println "STEP 2 - PFRIENDS  "
+println "-------------------"
+
+Map protectedFriendsMap = DataManager.getProtectedFriendsMap(appDatasXml)
+def protectedFriendsCount = protectedFriendsMap.size()
+println "Protected Friends: " + protectedFriendsCount
+
+summary += "\n\r"
+summary += "Protected Friends: " + protectedFriendsCount
+summary += "\n\r"
+
+println "--------------------"
+println "STEP 2 - SPROSPECT  "
+println "--------------------"
+
+Map sourceProspectsMap = DataManager.getSourceProspects(appDatasXml);
+def totalSsourceProspectsCount = sourceProspectsMap.size()
+def countSourceProspectNotDryOut = 0
+sourceProspectsMap.each { key, twitterUserProspectJson ->
+	if(!twitterUserProspectJson.followDryOut)
+		countSourceProspectNotDryOut++
+}
+		
+println "Friends Prospects available: $countSourceProspectNotDryOut on $totalSsourceProspectsCount"
+
+summary += "\n\r"
+summary += "Friends Prospects available: $countSourceProspectNotDryOut on $totalSsourceProspectsCount"
+summary += "\n\r"
+
 SendEmail.sendSummaryMail(summary, "" + followersCount);
 
 	

@@ -3,17 +3,19 @@ import twitter4j.*;
 import twitter4j.auth.*;
 import twitter4j.conf.*;
 
+import groovy.json.*
+
 /**
  *
  */
-class SourceProspectList {
+class SourceProspectManager {
 
 	Twitter twitter
 	def appDatasXml
 
 	def userName
 	
-    SourceProspectList(Twitter twitter, def appDatasXml) {
+    SourceProspectManager(Twitter twitter, def appDatasXml) {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
@@ -36,28 +38,32 @@ class SourceProspectList {
 	}
 	
 	def initialize(){
+		final Map sourceProspectsMap = DataManager.getSourceProspects(appDatasXml);
 		final Map newSourceProspectsMap = new HashMap()
 		final Map draftProspectsMap = DataManager.getDraftProspects(appDatasXml)
 		if(draftProspectsMap.size() > 0){
 		
-			RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(twitter)
+			Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+			RateLimitStatus rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
 			
 			def countCallTwitterShowUser = 0
 			draftProspectsMap.each { key, value ->
 				try{
-// CHECK RATIO
-println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
-if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
-	ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-	Map<String ,RateLimitStatus> rateLimitStatusMap = twitter.getRateLimitStatus()
-	rateLimitUserShow = rateLimitStatusMap.get("/users/show/:id")
-	countCallTwitterShowUser = 0
-}
+					// CHECK RATIO
+					println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
+					if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
+						ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())	
+						rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
+						countCallTwitterShowUser = 0
+					}
 
 					User user = twitter.showUser(key)
+					String userIdString = "" + user.getId();
 					countCallTwitterShowUser++
-					def twitterUserInfo = user.getScreenName() + ";" + user.getName()
-					newSourceProspectsMap.put(user.getId(), twitterUserInfo)
+					if(!sourceProspectsMap.containsKey(userIdString)){
+						def twitterUser = new TwitterUser( id: user.getId(), name: user.getName(), screenName: user.getScreenName(), createdAt: user.getCreatedAt(), favouritesCount: user.getFavouritesCount(), friendsCount: user.getFriendsCount(), followersCount: user.getFollowersCount())
+						newSourceProspectsMap.put(userIdString, twitterUser);
+					}
 				} catch(TwitterException ex) { 
 					println "TwitterException : " + ex.getMessage()
 					ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset());
@@ -73,7 +79,7 @@ if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 			println "prospect to write in the prospect source list: " + newSourceProspectsMap.entrySet().size()
 			newSourceProspectsMap.each { key, value ->
 				try{
-					 file << (key + "=" + value + "\n")
+					 file << (key + "=" + new JsonBuilder(value).toString() + "\n")
 				} catch(IOException ex) { 
 					System.err.println("An IOException was caught!"); 
 					ex.printStackTrace(); 

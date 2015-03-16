@@ -4,7 +4,8 @@ import twitter4j.auth.*;
 import twitter4j.conf.*;
 
 import java.math.*
- 
+import groovy.json.*
+
 /**
  *
  */
@@ -24,13 +25,14 @@ class FavoriteManager {
     }
 
 	def startAddFavoriteTweets(maxNewFavorites){
-		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
+		final Map queryWordsMap = DataManager.getQueryWords(appDatasXml)
 		
 		final Map favoriteTweetsMap = new HashMap()
 		def countNewFavoriteTweetGlobal = 0
         try {
 		
-			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
+			Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+			RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(rateLimitStatusMap, twitter)
 				
 			def splitByWord = getFavoriteTweetByQueryWord(queryWordsMap, maxNewFavorites)
 			
@@ -134,9 +136,10 @@ class FavoriteManager {
 	
 	def cleanFavoriteTweets(){
 	
-		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(twitter)
+		Map<String ,RateLimitStatus> rateLimitStatusMap = RateUtil.checkRateLimit(null, twitter)
+		RateLimitStatus rateLimitSearchTweet = RateUtil.checkRateLimitSearchTweet(rateLimitStatusMap, twitter)
 		
-		final Map queryWordsMap = MapUtil.getQueryWords(appDatasXml)
+		final Map queryWordsMap = DataManager.getQueryWords(appDatasXml)
 		int page = 10
 		int totalTweets = page * 20
 		Paging paging = new Paging(1, totalTweets)
