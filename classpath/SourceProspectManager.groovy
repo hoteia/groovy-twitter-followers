@@ -19,7 +19,7 @@ class SourceProspectManager {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
-		this.userName = appDatasXml.conf.user.@screenName.text()
+		this.userName = appDatasXml.conf.user.@name.text()
     }
 
 	def isNotUpToDate(){
@@ -53,7 +53,7 @@ class SourceProspectManager {
 					println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
 					if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 						ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())	
-						rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
+						rateLimitUserShow = RateUtil.checkRateLimitUserShow(null, twitter)
 						countCallTwitterShowUser = 0
 					}
 
@@ -62,6 +62,7 @@ class SourceProspectManager {
 					countCallTwitterShowUser++
 					if(!sourceProspectsMap.containsKey(userIdString)){
 						def twitterUser = new TwitterUser( id: user.getId(), name: user.getName(), screenName: user.getScreenName(), createdAt: user.getCreatedAt(), favouritesCount: user.getFavouritesCount(), friendsCount: user.getFriendsCount(), followersCount: user.getFollowersCount())
+						println "Add : " + user.getId() + " : " + user.getName() 
 						newSourceProspectsMap.put(userIdString, twitterUser);
 					}
 				} catch(TwitterException ex) { 
@@ -75,7 +76,7 @@ class SourceProspectManager {
 			
 			// SAVE/ADD NEW PROSPECT
 			// rewrite all the map : delete/write
-			File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/friends_prospects.properties');
+			File file = new File(ScriptGroovyUtil.getDataPath(userName) + '/friends_prospects.properties');
 			println "prospect to write in the prospect source list: " + newSourceProspectsMap.entrySet().size()
 			newSourceProspectsMap.each { key, value ->
 				try{
@@ -87,7 +88,7 @@ class SourceProspectManager {
 			}
 
 			// clean draft			
-			def draftProspectsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/draft_prospects.properties');
+			def draftProspectsFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/draft_prospects.properties');
 			draftProspectsFile.delete()
 			draftProspectsFile.createNewFile()  
 			

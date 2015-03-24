@@ -9,11 +9,11 @@ class DataManager {
 	def static jsonSlurper = new JsonSlurper()
 
 	synchronized static Map getHistoricIds(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map historicMap = new HashMap()
 		try {
-			def protectedFollowingFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_add_followers.properties');
+			def protectedFollowingFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/history_add_followers.properties');
 			if (!protectedFollowingFile.exists()) {
 				protectedFollowingFile.createNewFile()  
 				return historicMap;
@@ -53,11 +53,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getBlockedByUsers(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map blockedByUsersMap = new HashMap()
 		try {
-			def blockedByUsersFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/blocked_by_user.properties');
+			def blockedByUsersFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/blocked_by_user.properties');
 			if (!blockedByUsersFile.exists()) {
 				blockedByUsersFile.createNewFile()  
 				return blockedByUsersMap;
@@ -97,11 +97,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getIgnoreFollowers(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map ignoreFollowersMap = new HashMap()
 		try {
-			def ignoreFollowersFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/ignore_followers.properties');
+			def ignoreFollowersFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/ignore_followers.properties');
 			if (!ignoreFollowersFile.exists()) {
 				ignoreFollowersFile.createNewFile()  
 				return ignoreFollowersMap;
@@ -141,11 +141,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getHistoryFavoriteTweets(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map historyFavoriteTweetsMap = new HashMap()
 		try {
-			def historyFavoriteTweetsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_favorite_tweets.properties');
+			def historyFavoriteTweetsFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/history_favorite_tweets.properties');
 			if (!historyFavoriteTweetsFile.exists()) {
 				historyFavoriteTweetsFile.createNewFile()  
 				return historyFavoriteTweetsMap;
@@ -185,12 +185,14 @@ class DataManager {
 	}
 	
 	synchronized static Map getProtectedFriendsMap(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map protectedFriendsMap = new HashMap()
 		try {
-			def protectedFollowingFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/protected_friends.properties');
+			def path = ScriptGroovyUtil.getDataPath(userName) + '/protected_friends.properties'
+			def protectedFollowingFile =  new File(path)
 			if (!protectedFollowingFile.exists()) {
+				println "Create file: $path"
 				protectedFollowingFile.createNewFile()  
 				return protectedFriendsMap;
 			}
@@ -229,11 +231,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getSourceProspects(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map sourceProspectsMap = new HashMap()
 		try {
-			def protectedFollowingFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/friends_prospects.properties');
+			def protectedFollowingFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/friends_prospects.properties');
 			if (!protectedFollowingFile.exists()) {
 				protectedFollowingFile.createNewFile()  
 				return sourceProspectsMap;
@@ -275,7 +277,7 @@ class DataManager {
 	def getHistoryPokeTweets(){
 		final Map historyPokeTweetsMap = new HashMap()
 		try {
-			def historyPokeTweetsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_poke_tweets.properties');
+			def historyPokeTweetsFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/history_poke_tweets.properties');
 			if (!historyPokeTweetsFile.exists()) {
 				historyPokeTweetsFile.createNewFile()  
 				return historyPokeTweetsMap;
@@ -315,11 +317,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getDraftProspects(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map draftProspectsMap = new HashMap()
 		try {
-			def protectedFollowingFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/draft_prospects.properties');
+			def protectedFollowingFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/draft_prospects.properties');
 			if (!protectedFollowingFile.exists()) {
 				protectedFollowingFile.createNewFile()  
 				return draftProspectsMap;
@@ -348,11 +350,11 @@ class DataManager {
 	}
 	
 	synchronized static Map getQueryWords(appDatasXml){
-		def userName = appDatasXml.conf.user.@screenName.text()
+		def userName = appDatasXml.conf.user.@name.text()
 		
 		final Map queryWordsMap = new HashMap()
 		try {
-			def queryWordsFile =  new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/favorite_tweets_query_words.properties');
+			def queryWordsFile =  new File(ScriptGroovyUtil.getDataPath(userName) + '/favorite_tweets_query_words.properties');
 			if (!queryWordsFile.exists()) {
 				queryWordsFile.createNewFile()  
 				return queryWordsMap;

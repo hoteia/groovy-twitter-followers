@@ -64,14 +64,21 @@ if(userIdDoesntExist){
 	println "App data doesn't contains user id : $userId"
 	appDatasXml.conf.user[0].@id = "" + userId
 }
-def userName = appDatasXml.conf.user.@screenName.text()
+def userScreenName = appDatasXml.conf.user.@name.text()
+boolean userScreenNameDoesntExist = !userScreenName?.trim()
+if(userScreenNameDoesntExist){
+	userScreenName = twitter.getScreenName()
+	println "App data doesn't contains userScreenName : $userScreenName"
+	appDatasXml.conf.user[0].@name = userScreenName
+}
+def userName = appDatasXml.conf.user.@name.text()
 boolean userNameDoesntExist = !userName?.trim()
 if(userNameDoesntExist){
 	userName = twitter.getScreenName()
 	println "App data doesn't contains userName : $userName"
-	appDatasXml.conf.user[0].@screenName = userName
+	appDatasXml.conf.user[0].@name = userName
 }
-println "User, ID : $userId , name : $userName"
+println "User, ID : $userId, name : $userName, screenName : $userScreenName"
 
 def userFolder = new File(rootScriptDir + 'logs/' + userName + '/')
 if(!userFolder.exists()){

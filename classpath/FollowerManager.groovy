@@ -24,7 +24,7 @@ class FollowerManager {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
-		this.userName = appDatasXml.conf.user.@screenName.text()
+		this.userName = appDatasXml.conf.user.@name.text()
 		this.myUserId = appDatasXml.conf.user.@id.text()
     }
 
@@ -68,7 +68,8 @@ class FollowerManager {
 
 						boolean continueItIdsPagination = true;
 						long cursor = -1;
-						if(twitterUserProspectJson.followLastCursor != 0){
+						if(ignorefollowersMap.size > 0 && twitterUserProspectJson.followLastCursor != 0){
+							// If ignorefollowersMap == 0 we have reset ignore list -> reset the pagination
 							cursor = twitterUserProspectJson.followLastCursor;
 						}
 						
@@ -125,6 +126,7 @@ class FollowerManager {
 										println "-------------------------------------------------------"
 
 										User showUser = twitter.showUser(followerId);
+										def twitterUserInfo = showUser.getScreenName() + ";" + showUser.getName();
 										println "### User info: " + showUser.getScreenName() + "/" + showUser.getName() 
 										countCallTwitterShowUser++
 										Status status = showUser.getStatus();
@@ -147,18 +149,20 @@ class FollowerManager {
 												println "Last statut is not recent >30, ignore: " + (lastStatusDate.time <= validDateTime.time) + " -> " +lastStatusDate
 												
 												if(lastStatusDate.time >= validDateTime.time){
-													def twitterUser = new TwitterUser( id: showUser.getId(), name: showUser.getName(), screenName: showUser.getScreenName(), createdAt: showUser.getCreatedAt(), favouritesCount: showUser.getFavouritesCount(), friendsCount: showUser.getFriendsCount(), followersCount: showUser.getFollowersCount(), followDryOut:false)
+													// SANITY CHECK : json doesn't like = in String
+													def twitterUser = new TwitterUser( id: showUser.getId(), name: showUser.getName().replace("=", ""), screenName: showUser.getScreenName().replace("=", ""), createdAt: showUser.getCreatedAt(), favouritesCount: showUser.getFavouritesCount(), friendsCount: showUser.getFriendsCount(), followersCount: showUser.getFollowersCount(), followDryOut:false)
 													targetedFollowersMap.put(showUser.getId(), twitterUser)
 													println "- Keep - Total users to add: " + targetedFollowersMap.size()
 													countUserToAddByProspect++
-												} else if (lastStatusDate.time <= ignoreDateTime.time){
-													def twitterUserInfo = showUser.getScreenName() + ";" + showUser.getName();
+												} else if (lastStatusDate.time <= ignoreDateTime.time){													
 													ignorefollowersMap.put(showUser.getId(), twitterUserInfo)
 													println "- Ignore - ignore followers Map size:  " + ignorefollowersMap.size()
 												}
 											}
 										} else {
 											println "- Skip -"
+											ignorefollowersMap.put(showUser.getId(), twitterUserInfo)
+											println "- Ignore - ignore followers Map size:  " + ignorefollowersMap.size()
 										}
 										
 									} catch(TwitterException ex) { 
@@ -243,7 +247,7 @@ class FollowerManager {
 		// SAVE IGNORE FOLLOWER
 		// rewrite all the map : delete/write
 		println "added users to write in the ignore list: " + ignorefollowersMap.entrySet().size()
-		File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/ignore_followers.properties');
+		File file = new File(ScriptGroovyUtil.getDataPath(userName) + '/ignore_followers.properties');
 		ignorefollowersMap.each { key, value ->
 			try{
 				 file << (key + "=" + value + "\n")
@@ -256,7 +260,7 @@ class FollowerManager {
 		
 		
 		// rewrite all the map : delete/write
-		FileWriter fstream = new FileWriter(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/friends_prospects.properties');
+		FileWriter fstream = new FileWriter(ScriptGroovyUtil.getDataPath(userName) + '/friends_prospects.properties');
 		BufferedWriter bufferedWriter = new BufferedWriter(fstream); 
 		println "friends to write in the new friend prospect list: " + sourceProspectsMap.entrySet().size()
 		sourceProspectsMap.each { key, value ->
@@ -329,7 +333,7 @@ class FollowerManager {
 		
 		// SAVE HISTORY
 		println "added friend to write in the history list: " + addedFollowersMap.size()
-		File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_add_followers.properties');
+		File file = new File(ScriptGroovyUtil.getDataPath(userName) + '/history_add_followers.properties');
 		addedFollowersMap.each { key, value ->
 			try{
 				file << (key + "=" + new JsonBuilder(value).toString() + "\n")

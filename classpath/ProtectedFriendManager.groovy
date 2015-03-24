@@ -20,7 +20,7 @@ class ProtectedFriendManager {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
-		this.userName = appDatasXml.conf.user.@screenName.text()
+		this.userName = appDatasXml.conf.user.@name.text()
     }
 
 	def isNotInitialized(){
@@ -70,7 +70,7 @@ class ProtectedFriendManager {
 					println "CHECK RATIO : " + rateLimitUserShow.getRemaining() + " : " + countCallTwitterShowUser 
 					if(countCallTwitterShowUser >= (rateLimitUserShow.getRemaining() - 1)){
 						ScriptGroovyUtil.pause(rateLimitUserShow.getSecondsUntilReset())
-						rateLimitUserShow = RateUtil.checkRateLimitUserShow(rateLimitStatusMap, twitter)
+						rateLimitUserShow = RateUtil.checkRateLimitUserShow(null, twitter)
 						countCallTwitterShowUser = 0
 					}
 
@@ -91,7 +91,7 @@ class ProtectedFriendManager {
 		}
 
 		// rewrite all the map : delete/write
-		FileWriter fstream = new FileWriter(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/protected_friends.properties');
+		FileWriter fstream = new FileWriter(ScriptGroovyUtil.getDataPath(userName) + '/protected_friends.properties');
 		BufferedWriter bufferedWriter = new BufferedWriter(fstream); 
 		println "friends to write in the protected list: " + protectedFriendsMap.entrySet().size()
 		protectedFriendsMap.each { key, value ->

@@ -21,7 +21,7 @@ class FavoriteManager {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 				
-		this.userName = appDatasXml.conf.user.@screenName.text()
+		this.userName = appDatasXml.conf.user.@name.text()
     }
 
 	def startAddFavoriteTweets(maxNewFavorites){

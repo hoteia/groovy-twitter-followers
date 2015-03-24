@@ -22,7 +22,7 @@ class PokeManager {
 		this.twitter = twitter;	
 		this.appDatasXml = appDatasXml;	
 		
-		this.userName = appDatasXml.conf.user.@screenName.text()
+		this.userName = appDatasXml.conf.user.@name.text()
     }
 
 	def startAddPokeTweets(maxNewPokes){
@@ -136,7 +136,7 @@ class PokeManager {
 		// SAVE HISTORY
 		// rewrite all the map : delete/write
 		println "saved user in the history list: " + pokeTweetsMap.size()
-		File file = new File(ScriptGroovyUtil.getRootScriptDir() + 'datas/' + userName + '/history_poke_tweets.properties');
+		File file = new File(ScriptGroovyUtil.getDataPath(userName) + '/history_poke_tweets.properties');
 		pokeTweetsMap.each { key, value ->
 			try{
 				 file << (key + "=" + value + "\n")
