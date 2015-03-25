@@ -122,6 +122,12 @@ Map protectedFriendsMap = DataManager.getProtectedFriendsMap(appDatasXml)
 def protectedFriendsCount = protectedFriendsMap.size()
 println "Protected Friends: " + protectedFriendsCount
 
+for ( entry in protectedFriendsMap ) {
+	def key = entry.key
+	def value = entry.value
+	println "Protected Friend $key/$value"
+}
+
 summary += "\n\r"
 summary += "Protected Friends: " + protectedFriendsCount
 summary += "\n\r"

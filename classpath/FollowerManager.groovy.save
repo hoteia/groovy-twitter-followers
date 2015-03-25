@@ -286,9 +286,7 @@ class FollowerManager {
 	def addFollowers(Map targetedFollowersMap){
 		final Map addedFollowersMap = new HashMap()
 		final Map blockUsersMap = new HashMap()
-		for ( entry in targetedFollowersMap ) {
-			def key = entry.key
-			def value = entry.value
+		targetedFollowersMap.each { key, value ->
 			try{
 				long prospectTwitterId = new Long(key).longValue();
 				addedFollowersMap.put(key, value)
@@ -308,11 +306,10 @@ class FollowerManager {
 				def errorCode = ex.getErrorCode()
 				if(162 == errorCode){
 					blockUsersMap.put(key, value)
-				} else {
-					break
+				}else{
+				   ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
+				   return
 				}
-				
-				//ScriptGroovyUtil.pause(ex.getRateLimitStatus().getSecondsUntilReset())
 
 			} catch(IOException ex) { 
 				Writer wr = new StringWriter();
